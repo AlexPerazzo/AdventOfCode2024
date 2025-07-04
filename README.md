@@ -4,7 +4,7 @@ Practicing coding challenges from Advent of Code 2024 using C#
 
 ## Progress
 
-- Total: 21 Stars
+Total: 21 Stars
 
 - Day 1 **
 - Day 2 **
@@ -17,4 +17,4 @@ Practicing coding challenges from Advent of Code 2024 using C#
 - Day 9 *
 - Day 10 **
 - Day 11 *
-- Day 12 *
+- Day 12 **

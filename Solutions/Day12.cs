@@ -1,7 +1,4 @@
-﻿using System.Diagnostics.Metrics;
-using System.Linq;
-
-namespace AdventOfCode2024.Solutions
+﻿namespace AdventOfCode2024.Solutions
 {
     public class Day12Solver
     {
@@ -9,7 +6,11 @@ namespace AdventOfCode2024.Solutions
         private List<List<char>> _map;
         public HashSet<(int, int)> _checkedSpots = new HashSet<(int, int)>();
         public HashSet<(int, int)> _region = new HashSet<(int, int)>();
+
         public List<(int, int)> directions = [(0, 1), (0, -1), (1, 0), (-1, 0)];
+        public List<(int currentY, int currentX, (int, int) direction)> perimeterCords = new();
+        public int perimeter = 0;
+
 
         public Day12Solver(string inputPath)
         {
@@ -36,17 +37,18 @@ namespace AdventOfCode2024.Solutions
         {
             int total = 0;
 
-            for (var col = 0; col < _map.Count; col++)
+            for (var y = 0; y < _map.Count; y++)
             {
-                for (var row = 0; row < _map[0].Count; row++)
+                for (var x = 0; x < _map[0].Count; x++)
                 {
-                    if (!_checkedSpots.Contains((col, row)))
+                    if (!_checkedSpots.Contains((y, x)))
                     {
-                        var letter = _map[col][row];
-                        CheckNeighbors(letter, col, row);
+                        var letter = _map[y][x];
+                        CheckNeighbors(letter, y, x);
 
-                        total += ProcessRegionPart2(letter);
+                        total += ProcessRegion(letter);
                         _region.Clear();
+                        perimeterCords.Clear();
                     }
                 }
             }
@@ -55,21 +57,21 @@ namespace AdventOfCode2024.Solutions
             return total.ToString();
         }
 
-        public void CheckNeighbors(char letter, int col, int row)
+        public void CheckNeighbors(char letter, int y, int x)
         {
-            _region.Add((col, row));
-            _checkedSpots.Add((col, row));
+            _region.Add((y, x));
+            _checkedSpots.Add((y, x));
 
-            foreach ((int moveCol, int moveRow) in directions)
+            foreach ((int deltaY, int deltaX) in directions)
             {
-                int newCol = col + moveCol;
-                int newRow = row + moveRow;
+                int newY = y + deltaY;
+                int newX = x + deltaX;
 
-                if (newCol >= 0 && newCol < _map.Count && newRow >= 0 && newRow < _map[newCol].Count)
+                if (newY >= 0 && newY < _map.Count && newX >= 0 && newX < _map[newY].Count)
                 {
-                    if (!_region.Contains((newCol, newRow)) && _map[newCol][newRow] == letter)
+                    if (!_region.Contains((newY, newX)) && _map[newY][newX] == letter)
                     {
-                        CheckNeighbors(letter, newCol, newRow);
+                        CheckNeighbors(letter, newY, newX);
                     }
                 }
             }
@@ -80,16 +82,16 @@ namespace AdventOfCode2024.Solutions
             int regionSize = _region.Count;
             int perimeter = 0;
 
-            foreach((int col, int row) in _region)
+            foreach((int Y, int X) in _region)
             {
-                foreach ((int moveCol, int moveRow) in directions)
+                foreach ((int deltaY, int deltaX) in directions)
                 {
-                    int newCol = col + moveCol;
-                    int newRow = row + moveRow;
+                    int newY = Y + deltaY;
+                    int newX = X + deltaX;
 
-                    if (newCol >= 0 && newCol < _map.Count && newRow >= 0 && newRow < _map[newCol].Count)
+                    if (newY >= 0 && newY < _map.Count && newX >= 0 && newX < _map[newY].Count)
                     {
-                        if (_map[newCol][newRow] != letter)
+                        if (_map[newY][newX] != letter)
                         {
                             perimeter++;
                         }
@@ -106,56 +108,108 @@ namespace AdventOfCode2024.Solutions
 
         public int ProcessRegionPart2(char letter)
         {
+            perimeter = 0;
             int regionSize = _region.Count;
-            int perimeter = 0;
-            List<(int currentRow, int neighborRow)> perimeterRows = new List<(int, int)>();
-            List<(int currentCol, int neighborCol)> perimeterCols = new List<(int, int)>();
 
-            foreach ((int col, int row) in _region)
+            foreach ((int y, int x) in _region)
             {
-                foreach ((int moveCol, int moveRow) in directions)
+                foreach (var direction in directions)
                 {
-                    int newCol = col + moveCol;
-                    int newRow = row + moveRow;
+                    (int deltaY, int deltaX) = direction;
+                    int newY = y + deltaY;
+                    int newX = x + deltaX;
 
-                    if (newCol >= 0 && newCol < _map.Count && newRow >= 0 && newRow < _map[newCol].Count)
+                    if (newY >= 0 && newY < _map.Count && newX >= 0 && newX < _map[newY].Count)
                     {
-                        if (_map[newCol][newRow] != letter)
+                        if (_map[newY][newX] != letter)
                         {
-                            if (newCol != col && !perimeterCols.Contains((col, newCol)))
-                            {
-                                perimeter++;
-                                perimeterCols.Add((col, newCol));
-                            }
-                            else if (newRow != row && !perimeterRows.Contains((row, newRow)))
-                            {
-                                perimeter++;
-                                perimeterRows.Add((row, newRow));
-                            }
+                            perimeterCords.Add((y, x, direction));
                         }
                     }
                     else
                     {
-                        if (newCol != col && !perimeterCols.Contains((col, newCol)))
-                        {
-                            perimeter++;
-                            perimeterCols.Add((col, newCol));
-                        }
-                        else if (newRow != row && !perimeterRows.Contains((row, newRow)))
-                        {
-                            perimeter++;
-                            perimeterRows.Add((row, newRow));
-                        }
+                        perimeterCords.Add((y, x, direction));
                     }
                 }
             }
+            ProcessPerimeters();
 
             return regionSize * perimeter;
         }
 
+        public void ProcessPerimeters()
+        {
+            foreach (var (Y, X, direction) in perimeterCords.ToList())
+            {
+                if (perimeterCords.Contains((Y, X, direction)))
+                {
+                    perimeter++;
+                    DeletePerimeters(Y, X, direction);
+                }
+            }
+        }
+
+        public void DeletePerimeters(int y, int x, (int deltaY, int deltaX) direction)
+        {
+            //If there's an adjacent perimeter, delete it from the main list
+            //Thus only counting each wall of perimeters once
+
+            perimeterCords.Remove((y, x, direction));
+            //If you were checking to the left or right, delete up and down neighbors
+            if (direction.deltaX != 0)
+            {
+                if (perimeterCords.Contains((y + 1, x, direction)))
+                {
+                    perimeterCords.Remove((y + 1, x, direction));
+                    DeletePerimeters(y+1, x, direction);
+                }
+                if (perimeterCords.Contains((y - 1, x, direction)))
+                {
+                    perimeterCords.Remove((y - 1, x, direction));
+                    DeletePerimeters(y - 1, x, direction);
+                }
+            }
+
+            else
+            {
+                if (perimeterCords.Contains((y, x + 1, direction)))
+                {
+                    perimeterCords.Remove((y, x + 1, direction));
+                    DeletePerimeters(y, x + 1, direction);
+                }
+                if (perimeterCords.Contains((y, x - 1, direction)))
+                {
+                    perimeterCords.Remove((y, x - 1, direction));
+                    DeletePerimeters(y, x - 1, direction);
+                }
+            }
+        }
+
         public string SolvePart2()
         {
-            return "";
+            //Same Process to find regions, just process ths scoring of the region differently
+            _checkedSpots.Clear();
+
+            int total = 0;
+
+            for (var y = 0; y < _map.Count; y++)
+            {
+                for (var x = 0; x < _map[0].Count; x++)
+                {
+                    if (!_checkedSpots.Contains((y, x)))
+                    {
+                        var letter = _map[y][x];
+                        CheckNeighbors(letter, y, x);
+
+                        total += ProcessRegionPart2(letter);
+                        _region.Clear();
+                        perimeterCords.Clear();
+                    }
+                }
+            }
+
+
+            return total.ToString();
         }
     }
 }
