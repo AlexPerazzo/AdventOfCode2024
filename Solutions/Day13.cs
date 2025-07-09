@@ -8,7 +8,7 @@ namespace AdventOfCode2024.Solutions
     public class Day13Solver
     {
         private string[] _lines;
-        public List<((int, int), (int, int), (int, int))> _allInfo = new();
+        private List<((long, long), (long, long), (long, long))> _allInfo = new();
 
         public Day13Solver(string inputPath)
         {
@@ -35,22 +35,41 @@ Button A: X+33, Y+93
              */
         }
 
-        public int ProcessGame(((int, int) buttonA, (int, int) buttonB, (int, int) prizeLocation) game)
+        private long GCD(long a, long b)
         {
-            List<(int, int)> allOptions = new();
-
-            int AbuttonX = game.buttonA.Item1;
-            int BbuttonX = game.buttonB.Item1;
-            int prizeDistanceX = game.prizeLocation.Item1;
-
-            int AbuttonY = game.buttonA.Item2;
-            int BbuttonY = game.buttonB.Item2;
-            int prizeDistanceY = game.prizeLocation.Item2;
-
-
-            for (int i = 0; i <= 100; i++)
+            while (a != 0 && b != 0)
             {
-                for (int j = 0; j <= 100; j++)
+                if (a > b)
+                    a %= b;
+                else
+                    b %= a;
+            }
+            if (a == 0)
+                return b;
+            else
+                return a;
+        }
+        private long ProcessGame(((long, long) buttonA, (long, long) buttonB, (long, long) prizeLocation) game)
+        {
+            List<(long, long)> allOptions = new();
+
+            long AbuttonX = game.buttonA.Item1;
+            long BbuttonX = game.buttonB.Item1;
+            long prizeDistanceX = game.prizeLocation.Item1;
+
+            long AbuttonY = game.buttonA.Item2;
+            long BbuttonY = game.buttonB.Item2;
+            long prizeDistanceY = game.prizeLocation.Item2;
+
+            long gcdX = GCD(AbuttonX, BbuttonX);
+            long gcdY = GCD(AbuttonY, BbuttonY);
+
+            if (prizeDistanceX % gcdX != 0 || prizeDistanceY % gcdY != 0)
+                return 0;
+
+            for (long i = 0; i <= 100; i++)
+            {
+                for (long j = 0; j <= 100; j++)
                 {
                     if (AbuttonX * i + BbuttonX * j == prizeDistanceX && AbuttonY * i + BbuttonY * j == prizeDistanceY)
                     {
@@ -59,10 +78,10 @@ Button A: X+33, Y+93
                 }
             }
 
-            int cheapestCost = 999999999;
-            foreach ((int howManyA, int howManyB) options in allOptions)
+            long cheapestCost = 999999999;
+            foreach ((long howManyA, long howManyB) options in allOptions)
             {
-                int tokenCost = options.howManyA * 3 + options.howManyB;
+                long tokenCost = options.howManyA * 3 + options.howManyB;
                 if (tokenCost < cheapestCost)
                 {
                     cheapestCost = tokenCost;
@@ -72,115 +91,131 @@ Button A: X+33, Y+93
             return cheapestCost;
         }
 
-        //public int ProcessGame(((int, int) buttonA, (int, int) buttonB, (int, int) prizeLocation) game)
-        //{
-        //    int howManyTokens = 0;
+        private long ProcessGamePart2(((long, long) buttonA, (long, long) buttonB, (long, long) prizeLocation) game)
+        {
 
-        //    (bool aIsMoreEfficient, bool xIsBigger) = IsAMoreEfficient(game);
-        //    int buttonAdistance;
-        //    int buttonBdistance;
-        //    int prizeDistance;
-        //    //focus on the furthest movement you need to go with the most efficient movement possible
-        //    if (xIsBigger) 
-        //    {
-        //        buttonAdistance = game.buttonA.Item1;
-        //        buttonBdistance = game.buttonB.Item1;
-        //        prizeDistance = game.prizeLocation.Item1;
-        //    }
-        //    else
-        //    {
-        //        buttonAdistance = game.buttonA.Item2;
-        //        buttonBdistance = game.buttonB.Item2;
-        //        prizeDistance = game.prizeLocation.Item2;
-        //    }
+            List<(long, long)> allOptions = new();
+
+            long AbuttonX = game.buttonA.Item1;
+            long BbuttonX = game.buttonB.Item1;
+            long prizeDistanceX = game.prizeLocation.Item1;
+
+            long AbuttonY = game.buttonA.Item2;
+            long BbuttonY = game.buttonB.Item2;
+            long prizeDistanceY = game.prizeLocation.Item2;
+
+            long gcdX = GCD(AbuttonX, BbuttonX);
+            long gcdY = GCD(AbuttonY, BbuttonY);
+
+            if (prizeDistanceX % gcdX != 0 || prizeDistanceY % gcdY != 0)
+                return 0;
 
 
-        //    if (aIsMoreEfficient) 
-        //    {
-        //        //Take prize's spots mod A/B's movement
-        //        int howManyA = prizeDistance / buttonAdistance;
-        //        int AmountLeftoverForB = prizeDistance % buttonAdistance;
+            long howManyTokens = 0;
 
-        //        int counter = 0;
+            (bool aIsMoreEfficient, bool xIsBigger) = IsAMoreEfficient(game);
+            ////focus on the furthest movement you need to go with the most efficient movement possible
 
-        //        //Check if remainder is divisible by B / A
-        //        while (AmountLeftoverForB % buttonBdistance != 0 && counter <= 100)
-        //        {
-        //            AmountLeftoverForB += buttonAdistance;
-        //            counter++;
-        //        }
+            long buttonAdistance;
+            long buttonBdistance;
+            long prizeDistance;
+            if (xIsBigger)
+            {
+                buttonAdistance = game.buttonA.Item1;
+                buttonBdistance = game.buttonB.Item1;
+                prizeDistance = game.prizeLocation.Item1;
+            }
+            else
+            {
+                buttonAdistance = game.buttonA.Item2;
+                buttonBdistance = game.buttonB.Item2;
+                prizeDistance = game.prizeLocation.Item2;
+            }
 
-        //        if (AmountLeftoverForB % buttonBdistance == 0) 
-        //        { 
-        //            //If so, check if these totals work for the other coordinate (X/Y).
-        //            int howManyB = AmountLeftoverForB / buttonBdistance;
 
-        //            if (xIsBigger)
-        //            {
-        //                if ((howManyA * game.buttonA.Item2) + (howManyB * game.buttonB.Item2) == game.prizeLocation.Item2)
-        //                {
-        //                    howManyTokens = howManyA * 3 + howManyB;
-        //                    return howManyTokens;
-        //                }
-        //            }
-        //        }
-        //    }
+            if (aIsMoreEfficient)
+            {
+                //Take prize's spots mod A/B's movement
+                long howManyA = prizeDistance / buttonAdistance;
+                long AmountLeftoverForB = prizeDistance % buttonAdistance;
 
-        //    return 0;
-        //}
+                //Check if remainder is divisible by B / A
+                while (AmountLeftoverForB % buttonBdistance != 0)
+                {
+                    AmountLeftoverForB += buttonAdistance;
+                }
 
-        //public (bool, bool) IsAMoreEfficient(((int, int) buttonA, (int, int) buttonB, (int, int) prizeLocation) game)
-        //{
-        //    /* 
-        //     Find the best token to movement efficiency:
-        //        Find which coordinate you need to move further.
-        //        Divide the A movement of associated coordinate by 3 (movement per token)
-        //        Compare to B's movement per token
-        //    */
+                if (AmountLeftoverForB % buttonBdistance == 0)
+                {
+                    //If so, check if these totals work for the other coordinate (X/Y).
+                    long howManyB = AmountLeftoverForB / buttonBdistance;
 
-        //    bool xIsBigger = false;
-        //    bool aIsMoreEfficient = false;
+                    if (xIsBigger)
+                    {
+                        if ((howManyA * game.buttonA.Item2) + (howManyB * game.buttonB.Item2) == game.prizeLocation.Item2)
+                        {
+                            howManyTokens = howManyA * 3 + howManyB;
+                            return howManyTokens;
+                        }
+                    }
+                }
+            }
 
-        //    if (game.prizeLocation.Item1 > game.prizeLocation.Item2)
-        //        xIsBigger = true;
+            return 0;
+        }
 
-        //    if (xIsBigger)
-        //    {
-        //        int aEfficency = game.buttonA.Item1 / 3;
-        //        if (aEfficency > game.buttonB.Item1)
-        //            aIsMoreEfficient = true;
-        //    }
-        //    else
-        //    {
-        //        int aEfficency = game.buttonA.Item2 / 3;
-        //        if (aEfficency > game.buttonB.Item2)
-        //            aIsMoreEfficient = true;
-        //    }
+        private (bool, bool) IsAMoreEfficient(((long, long) buttonA, (long, long) buttonB, (long, long) prizeLocation) game)
+        {
+            /* 
+             Find the best token to movement efficiency:
+                Find which coordinate you need to move further.
+                Divide the A movement of associated coordinate by 3 (movement per token)
+                Compare to B's movement per token
+            */
 
-        //    return (aIsMoreEfficient, xIsBigger);
-        //}
+            bool xIsBigger = false;
+            bool aIsMoreEfficient = false;
 
-        public void ProcessText()
+            if (game.prizeLocation.Item1 > game.prizeLocation.Item2)
+                xIsBigger = true;
+
+            if (xIsBigger)
+            {
+                long aEfficency = game.buttonA.Item1 / 3;
+                if (aEfficency > game.buttonB.Item1)
+                    aIsMoreEfficient = true;
+            }
+            else
+            {
+                long aEfficency = game.buttonA.Item2 / 3;
+                if (aEfficency > game.buttonB.Item2)
+                    aIsMoreEfficient = true;
+            }
+
+            return (aIsMoreEfficient, xIsBigger);
+        }
+
+        private void ProcessText()
         {
             var piece = 0;
 
-            (int, int) buttonA = (0, 0);
-            (int, int) buttonB = (0, 0);
-            (int, int) prize = (0, 0);
+            (long, long) buttonA = (0, 0);
+            (long, long) buttonB = (0, 0);
+            (long, long) prize = (0, 0);
 
 
             foreach (var line in _lines) 
             {
                 var match = Regex.Match(line, @"X[+=](\d+),\s*Y[+=](\d+)");
 
-                int x = 0;
-                int y = 0;
+                long x = 0;
+                long y = 0;
 
                 if (string.IsNullOrEmpty(line))
                     continue;
 
-                x = int.Parse(match.Groups[1].Value);
-                y = int.Parse(match.Groups[2].Value);
+                x = long.Parse(match.Groups[1].Value);
+                y = long.Parse(match.Groups[2].Value);
                 
                 if (piece == 0)
                 {
@@ -207,13 +242,14 @@ Button A: X+33, Y+93
             }
         }
 
+       
 
         public string SolvePart1()
         {
-            int totalCost = 0;
+            long totalCost = 0;
             foreach (var game in _allInfo)
             {
-                int tokenCost = ProcessGame(game);
+                long tokenCost = ProcessGame(game);
                 if (tokenCost != 999999999)
                 {
                     totalCost += tokenCost;
