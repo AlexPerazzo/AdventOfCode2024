@@ -14,7 +14,9 @@
 
         public Day15Solver(string inputPath)
         {
-            ProcessText(inputPath);
+            _lines = File.ReadAllLines(inputPath);
+
+            ProcessText();
         }
 
         public string SolvePart1()
@@ -29,7 +31,7 @@
             }
 
             long totalScore = CalculateScore();
-            PrintMap();
+            //PrintMap();
             return totalScore.ToString();
         }
 
@@ -59,6 +61,50 @@
                 return false;
             }
         }
+        public bool MoveThingPart2((int y, int x) cords, (int y, int x) direction)
+        {
+            bool move = true;
+            (int y, int x) newCords = ((cords.y + direction.y), (cords.x + direction.x));
+
+            char currentItem = _warehouseMap[cords.y][cords.x];
+            char itemInTheWay = _warehouseMap[newCords.y][newCords.x];
+
+            if (itemInTheWay == '[')
+            {
+                (int y, int x) otherHalfCords = ((newCords.y), (newCords.x + 1));
+
+                bool move1 = MoveThingPart2(newCords, direction);
+                bool move2 = MoveThingPart2(otherHalfCords, direction);
+                move = move1 && move2;
+                itemInTheWay = _warehouseMap[newCords.y][newCords.x];
+            }
+
+            if (itemInTheWay == ']')
+            {
+                (int y, int x) otherHalfCords = ((newCords.y), (newCords.x - 1));
+
+                bool move1 = MoveThingPart2(newCords, direction);
+                bool move2 = MoveThingPart2(otherHalfCords, direction);
+                move = move1 && move2;
+                itemInTheWay = _warehouseMap[newCords.y][newCords.x];
+            }
+
+
+
+            if (itemInTheWay != '#' && move)
+            {
+                _warehouseMap[newCords.y][newCords.x] = currentItem;
+                _warehouseMap[cords.y][cords.x] = itemInTheWay;
+                //PrintMap();
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+
 
         private (int, int) FindCordsOfRobot()
         {
@@ -109,9 +155,8 @@
 
             return total;
         }
-        public void ProcessText(string inputPath)
+        public void ProcessText()
         {
-            _lines = File.ReadAllLines(inputPath);
 
             bool isMap = true;
 
@@ -135,9 +180,71 @@
             }
         }
 
+        private List<List<char>> UpdateMapForPart2()
+        {
+            List<List<char>> _updatedWarehouseMap = new();
+
+            foreach (var line in _warehouseMap)
+            {
+                string newLine = "";
+
+                foreach (var character in line)
+                {
+                    if (character == '#')
+                    {
+                        newLine += '#';
+                        newLine += '#';
+                    }
+                    else if (character == 'O')
+                    {
+                        newLine += '[';
+                        newLine += ']';
+                    }
+                    else if (character == '.')
+                    {
+                        newLine += '.';
+                        newLine += '.';
+                    }
+                    else if (character == '@')
+                    {
+                        newLine += '@';
+                        newLine += '.';
+                    }
+                }
+
+                _updatedWarehouseMap.Add([.. newLine]);
+            }
+
+            return _updatedWarehouseMap;
+        }
         public string SolvePart2()
         {
-            return "";
+            //_warehouseMap.Clear();
+            //_instructions = "";
+
+            //ProcessText();
+            //_warehouseMap = UpdateMapForPart2();
+
+            //Console.WriteLine("pt2");
+            //(int y, int x) currentCords = FindCordsOfRobot();
+            //PrintMap();
+            //var count = 0;
+            //foreach (var instruction in _instructions)
+            //{
+            //    (int, int) direction = _directions[instruction];
+            //    Console.WriteLine(_directions[instruction].y);
+            //    Console.WriteLine(_directions[instruction].x);
+
+            //    if (MoveThingPart2(currentCords, direction))
+            //        currentCords = (currentCords.y + _directions[instruction].y, currentCords.x + _directions[instruction].x);
+            //    PrintMap();
+            //    if (count > 10)
+            //        break;
+            //    count++;
+            //}
+
+            //long totalScore = CalculateScore();
+            return "WIP";
         }
     }
 }
