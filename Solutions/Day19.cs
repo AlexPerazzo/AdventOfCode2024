@@ -4,7 +4,7 @@
     {
         private string[] _lines;
         private List<string> _patterns = new();
-        private List<string> _towels = new();
+        private List<string> _towelArrangements = new();
 
         public Day19Solver(string inputPath)
         {
@@ -14,7 +14,42 @@
 
         public string SolvePart1()
         {
-            return "";
+            var totalPossibleDesigns = 0;
+
+            foreach (var towelArrangement in _towelArrangements) 
+            {
+                Console.WriteLine(totalPossibleDesigns);
+                if (IsThereTowelCombo(towelArrangement))
+                    totalPossibleDesigns++;
+            }
+            return totalPossibleDesigns.ToString();
+        }
+
+
+        private bool IsThereTowelCombo(string towelArrangement)
+        {
+            //Recursive
+            //Check if pattern of first letter matches
+            //If so, call again with shorter string
+            //If not, check first two letters
+            //So on and so forth
+            //If it passed at any point, good to go
+            //If not, bubble up false
+
+            //Base Case
+            if (_patterns.Contains(towelArrangement))
+                return true;
+
+            for (var i = 1; i <= towelArrangement.Length; i++)
+            {
+                if (_patterns.Contains(towelArrangement[..i]))
+                {
+                    if (IsThereTowelCombo(towelArrangement[i..]))
+                        return true;
+                }
+            }
+
+            return false;
         }
 
         private void ProcessText()
@@ -30,7 +65,7 @@
 
                 else if (isTowel)
                 {
-                    _towels.Add(line);
+                    _towelArrangements.Add(line);
                 }
 
                 else
