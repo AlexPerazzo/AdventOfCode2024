@@ -25,31 +25,25 @@
             return totalPossibleDesigns.ToString();
         }
 
-
         private bool IsThereTowelCombo(string towelArrangement)
         {
-            //Recursive
-            //Check if pattern of first letter matches
-            //If so, call again with shorter string
-            //If not, check first two letters
-            //So on and so forth
-            //If it passed at any point, good to go
-            //If not, bubble up false
+            HashSet<int> canBeMade = new HashSet<int>();
+            canBeMade.Add(towelArrangement.Length);
+            int jGoal = towelArrangement.Length;
 
-            //Base Case
-            if (_patterns.Contains(towelArrangement))
-                return true;
-
-            for (var i = 1; i <= towelArrangement.Length; i++)
+            for (var i = towelArrangement.Length; i > 0; i--)
             {
-                if (_patterns.Contains(towelArrangement[..i]))
+                jGoal -= 1;
+                for (var j = jGoal; j >= 0; j--)
                 {
-                    if (IsThereTowelCombo(towelArrangement[i..]))
-                        return true;
+                    var patternToCheck = towelArrangement[j..i];
+                    if (_patterns.Contains(towelArrangement[j..i]) && canBeMade.Contains(i))
+                    {
+                        canBeMade.Add(j);
+                    }
                 }
             }
-
-            return false;
+            return canBeMade.Contains(0);
         }
 
         private void ProcessText()
